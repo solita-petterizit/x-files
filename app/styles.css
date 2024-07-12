@@ -1,0 +1,16 @@
+body {
+    background-color: #282828;
+    color: #DC1E32;
+    font-size: 4em;
+    height: 100vh;
+    width: 100vw;
+}
+
+span {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
