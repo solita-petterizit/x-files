@@ -59,3 +59,26 @@ or:
 1. Test: `just test`
 2. Build: `just build`
 3. Remove build artifacts: `just clean`
+
+### Taskfile
+
+#### Pre-requisites
+
+1. [Install task](https://taskfile.dev/installation/)
+
+E.g x86_64 binary:
+
+```sh
+wget https://github.com/go-task/task/releases/download/v3.38.0/task_linux_amd64.tar.gz
+tar xvf task_linux_amd64.tar.gz --directory=/usr/local/bin task
+```
+
+#### Usage
+
+1. Test and build: `task`
+
+or:
+
+1. Test: `task test`
+2. Build: `task build`
+3. Remove build artifacts: `task clean`
