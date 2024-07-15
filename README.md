@@ -21,7 +21,19 @@ The commonly referenced modern options:
 
 ## Development (Linux)
 
+### Shell-driven
+
 1. Test: `./scripts/test.sh`
 2. Build: `./scripts/build-linux.sh`
 3. Remove build artifacts: `./scripts/clean.sh`
+
+### Makefile
+
+1. Test and build: `make`
+
+or:
+
+1. Test: `make test`
+2. Build: `make build`
+3. Remove build artifacts: `make clean`
 
