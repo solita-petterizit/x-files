@@ -25,20 +25,26 @@ test:
 build: export GOOS:=$(GOOS)
 build: export GOARCH:=$(GOARCH)
 build: export CGO_ENABLED:=$(CGO_ENABLED)
-build:
-	@echo "Ensuring $(BUILD_DIR) exists"
-	@mkdir -p $(BUILD_DIR)
-	@echo "Building application ($(APP_DIR)/main.go) for: $(GOOS)/$(GOARCH) (Cgo: $(CGO_ENABLED))"
-	@$(IN_APP_DIR) go build -o "$(BUILD_DIR)/app" main.go
-	@echo "Copying assets from $(APP_DIR) to $(BUILD_DIR)"
-	@$(IN_APP_DIR) cp "index.html" "$(BUILD_DIR)/index.html"
-	@$(IN_APP_DIR) cp "styles.css" "$(BUILD_DIR)/styles.css"
+build: $(BUILD_DIR)/app $(BUILD_DIR)/*.html $(BUILD_DIR)/*.css
 	@echo "Done. Build output:"
 	@ls -laR "$(BUILD_DIR)"
 	@echo "******************************************************"
 	@echo "Run in debug mode: $(BUILD_DIR)/app"
 	@echo "Run in production mode: GIN_MODE=release $(BUILD_DIR)/app"
 	@echo "******************************************************"
+
+$(BUILD_DIR)/app: $(APP_DIR)/*.go
+	@echo "Ensuring $(BUILD_DIR) exists"
+	mkdir -p $(BUILD_DIR)
+	@echo "Building application ($(APP_DIR)/main.go) for: $(GOOS)/$(GOARCH) (Cgo: $(CGO_ENABLED))"
+	$(IN_APP_DIR) go build -o "$(BUILD_DIR)/app" main.go
+
+$(BUILD_DIR)/*.html $(BUILD_DIR)/*.css &: $(APP_DIR)/*.html $(APP_DIR)/*.css
+	@echo "Ensuring $(BUILD_DIR) exists"
+	mkdir -p $(BUILD_DIR)
+	@echo "Copying assets from $(APP_DIR) to $(BUILD_DIR)"
+	$(IN_APP_DIR) cp "index.html" "$(BUILD_DIR)/index.html"
+	$(IN_APP_DIR) cp "styles.css" "$(BUILD_DIR)/styles.css"
 
 .PHONY:clean
 clean:

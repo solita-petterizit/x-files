@@ -45,6 +45,17 @@ tasks:
       GOOS: "{{.GOOS}}"
       GOARCH: "{{.GOARCH}}"
       CGO_ENABLED: "{{.CGO_ENABLED}}"
+    # Source files related to this task. Used for checksumming to skip unnecessary work.
+    # (See 'task build --status' before and after running 'task build')
+    sources:
+      - "{{.APP_DIR}}/*.go"
+      - "{{.APP_DIR}}/*.html"
+      - "{{.APP_DIR}}/*.css"
+    # Same as sources, but for what this task outputs.
+    generates:
+      - "{{.BUILD_DIR}}/app"
+      - "{{.BUILD_DIR}}/index.html"
+      - "{{.BUILD_DIR}}/styles.css"
   clean:
     desc: "Delete build artifacts"
     cmds:
