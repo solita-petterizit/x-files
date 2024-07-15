@@ -1,0 +1,55 @@
+version: "3"
+
+vars:
+  BUILD_DIR: "{{.TASKFILE_DIR}}/build"
+  APP_DIR: "{{.TASKFILE_DIR}}/app"
+
+tasks:
+  # What to run when calling 'task' without a target
+  default:
+    desc: "Test and build the application"
+    deps:
+      - test
+      - build
+  test:
+    desc: "Run unit tests"
+    # 'cd' before running cmds
+    dir: "{{.APP_DIR}}"
+    cmds:
+      - "go test . -v"
+  build:
+    desc: "Build the application binary and copy assets"
+    dir: "{{.APP_DIR}}"
+    # Suppress used commands from output (still prints command output)
+    silent: true
+    cmds:
+      - 'echo "Ensuring {{.BUILD_DIR}} exists"'
+      - 'mkdir -p {{.BUILD_DIR}}'
+      - 'echo "Building application ($PWD/main.go) for: $GOOS/$GOARCH (Cgo: $CGO_ENABLED)"'
+      - "go build -o {{.BUILD_DIR}}/app main.go"
+      - 'echo "Copying assets from ${{.APP_DIR}} to {{.BUILD_DIR}}"'
+      - "cp index.html {{.BUILD_DIR}}/index.html"
+      - "cp styles.css {{.BUILD_DIR}}/styles.css"
+      - 'ls -laR "{{.BUILD_DIR}}"'
+      - 'echo "******************************************************"'
+      - 'echo "Run in debug mode: {{.BUILD_DIR}}/app"'
+      - 'echo "Run in production mode: GIN_MODE=release {{.BUILD_DIR}}/app"'
+      - 'echo "******************************************************"'
+    # Variables this task takes (from user or other Taskfiles)
+    vars:
+      GOOS: '{{.GOOS | default "linux"}}'
+      GOARCH: '{{.GOARCH | default "amd64"}}'
+      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+    # Environment variables to add to cmds. Here we pull the variables.
+    env:
+      GOOS: "{{.GOOS}}"
+      GOARCH: "{{.GOARCH}}"
+      CGO_ENABLED: "{{.CGO_ENABLED}}"
+  clean:
+    desc: "Delete build artifacts"
+    cmds:
+      - "rm -r {{.BUILD_DIR}}"
+    # Which conditions must be met before running this task?
+    preconditions:
+      - sh: "test -d {{.BUILD_DIR}}"
+        msg: "Build directory does not exist. Nothing to delete."
