@@ -8,6 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TemplateData struct {
+	Text string
+}
+
+func NewTemplateData() TemplateData {
+	return TemplateData{
+		Text: "Hello, World!",
+	}
+}
+
 func main() {
 	r := gin.Default()
 
@@ -25,9 +35,7 @@ func main() {
 	r.LoadHTMLFiles(filepath.Join(workDir, "index.html"))
 	r.StaticFile("styles.css", filepath.Join(workDir, "styles.css"))
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", struct{ Text string }{
-			Text: "Hello, World!",
-		})
+		c.HTML(http.StatusOK, "index.html", NewTemplateData())
 	})
 
 	r.Run(":3000")

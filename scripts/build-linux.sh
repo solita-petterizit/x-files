@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Fail fast
+set -euo pipefail
+
 # Ensure we are working in the correct directory (repo root)
 SOURCE=${BASH_SOURCE[0]}
 while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
