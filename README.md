@@ -19,3 +19,9 @@ The commonly referenced modern options:
 - Earthfile
 - Dagger
 
+## Development (Linux)
+
+1. Test: `./scripts/test.sh`
+2. Build: `./scripts/build-linux.sh`
+3. Remove build artifacts: `./scripts/clean.sh`
+
