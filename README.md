@@ -37,3 +37,25 @@ or:
 2. Build: `make build`
 3. Remove build artifacts: `make clean`
 
+### Justfile
+
+#### Pre-requisites
+
+1. [Install just](https://github.com/casey/just/tree/master?tab=readme-ov-file#installation)
+
+E.g x86_64 binary:
+
+```sh
+wget https://github.com/casey/just/releases/download/1.31.0/just-1.31.0-x86_64-unknown-linux-musl.tar.gz
+tar xvf just-1.31.0-x86_64-unknown-linux-musl.tar.gz --directory=/usr/local/bin just
+```
+
+#### Usage
+
+1. Test and build: `just`
+
+or:
+
+1. Test: `just test`
+2. Build: `just build`
+3. Remove build artifacts: `just clean`
