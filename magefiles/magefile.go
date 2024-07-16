@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -29,7 +30,9 @@ const (
 
 // See init()
 var (
-	repoRoot = ""
+	// The directory of the repository root (not necessarily this magefile)
+	repoRootDir = ""
+	// Build paths
 	appDir   = ""
 	buildDir = ""
 )
@@ -41,12 +44,12 @@ func init() {
 	}
 
 	// Set globals
-	repoRoot = r
-	appDir = filepath.Join(repoRoot, "app")
-	buildDir = filepath.Join(repoRoot, "build")
+	repoRootDir = r
+	appDir = filepath.Join(repoRootDir, "app")
+	buildDir = filepath.Join(repoRootDir, "build")
 
 	// Set starting point
-	err = os.Chdir(repoRoot)
+	err = os.Chdir(repoRootDir)
 	if err != nil {
 		panic(err)
 	}
@@ -58,25 +61,13 @@ Mage targets
 
 // TestAndBuild runs the Test and Build targets
 func TestAndBuild() error {
-	mg.SerialDeps(Test, Build)
+	mg.Deps(Test, Build)
 	return nil
 }
 
 // Test runs unit tests
 func Test() error {
-	err := os.Chdir(appDir)
-	if err != nil {
-		return err
-	}
-	defer os.Chdir(repoRoot)
-
-	out, err := sh.Output("go", "test", ".", "-v")
-	if err != nil {
-		return err
-	}
-	fmt.Println(out)
-
-	return nil
+	return runInDir(appDir, "go", "test", ".", "-v")
 }
 
 // Build builds the application binary and copies assets
@@ -105,31 +96,33 @@ func Build() error {
 
 	fmt.Printf("Building application (%s/main.go) for: %s/%s (Cgo: %s)\n", appDir, goos, goarch, cgo)
 
-	err = os.Chdir(appDir)
-	if err != nil {
-		return err
-	}
-	defer os.Chdir(repoRoot)
-
-	err = run("go", "build", "-o", fmt.Sprintf("%s/app", buildDir), "main.go")
+	err = runInDir(appDir, "go", "build", "-o", fmt.Sprintf("%s/app", buildDir), "main.go")
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Copying assets from %s to %s\n", appDir, buildDir)
 
-	err = run("cp", "index.html", fmt.Sprintf("%s/index.html", buildDir))
+	err = runInDir(appDir, "cp", "index.html", fmt.Sprintf("%s/index.html", buildDir))
 	if err != nil {
 		return err
 	}
 
-	err = run("cp", "styles.css", fmt.Sprintf("%s/styles.css", buildDir))
+	err = runInDir(appDir, "cp", "styles.css", fmt.Sprintf("%s/styles.css", buildDir))
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("Done. Build output:")
-	run("ls", "-laR", buildDir)
+
+	out, err := sh.Output("ls", "-laR", buildDir)
+	if err != nil {
+		return err
+	}
+	if out != "" {
+		fmt.Println(out)
+	}
+
 	fmt.Println("******************************************************")
 	fmt.Printf("Run in debug mode: %s/app\n", buildDir)
 	fmt.Printf("Run in production mode: GIN_MODE=release %s/app\n", buildDir)
@@ -169,15 +162,21 @@ func findAbsRepoRoot() (string, error) {
 	return absRepoRoot, nil
 }
 
-// run runs a command that always outputs, regardless of mage verbosity
-func run(cmd string, args ...string) error {
-	out, err := sh.Output(cmd, args...)
+// runInDir runs a command in a directory, that always outputs, regardless of mage verbosity.
+// Can be used for targets running in parallel and skip using the non-parallel safe os.Chdir().
+// Mage does not support concurrently running os.Chdir().
+func runInDir(dir string, cmd string, args ...string) error {
+	command := exec.Command(cmd, args...)
+	command.Dir = dir
+
+	out, err := command.Output()
 	if err != nil {
 		return err
 	}
-	if out != "" {
-		fmt.Println(out)
+	if len(out) != 0 {
+		fmt.Println(string(out))
 	}
 
 	return nil
+
 }
