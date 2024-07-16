@@ -9,15 +9,15 @@ build environments? Can we perhaps even test them?
 
 The usual "old skool" ones:
 
-- Script
-- Makefile
+- [x] Script
+- [x] Makefile
 
 The commonly referenced modern options:
 
-- Justfile
-- Magefile
-- Earthfile
-- Dagger
+- [x] Justfile
+- [x] Magefile
+- [ ] Earthfile
+- [ ] Dagger
 
 ## Development (Linux)
 
@@ -36,6 +36,15 @@ or:
 1. Test: `make test`
 2. Build: `make build`
 3. Remove build artifacts: `make clean`
+
+#### Docker workflow
+
+1. Build and run: `make docker[-dev]`
+
+or:
+
+1. Build: `make docker-build`
+2. Run: `make docker-run[-dev]`
 
 ### Justfile
 
@@ -60,6 +69,15 @@ or:
 2. Build: `just build`
 3. Remove build artifacts: `just clean`
 
+#### Docker workflow
+
+1. Build and run: `just docker[-dev]`
+
+or:
+
+1. Build: `just docker-build`
+2. Run: `just docker-run[-dev]`
+
 ### Taskfile
 
 #### Pre-requisites
@@ -82,6 +100,15 @@ or:
 1. Test: `task test`
 2. Build: `task build`
 3. Remove build artifacts: `task clean`
+
+#### Docker workflow
+
+1. Build and run: `task docker[-dev]`
+
+or:
+
+1. Build: `task docker-build`
+2. Run: `task docker-run[-dev]`
 
 ### Magefile
 
@@ -106,4 +133,13 @@ or:
 1. Test: `mage test`
 2. Build: `mage build`
 3. Remove build artifacts: `mage clean`
+
+#### Docker workflow
+
+1. Build and run: `mage docker[Dev]`
+
+or:
+
+1. Build: `mage dockerBuild`
+2. Run: `mage dockerRun[Dev]`
 

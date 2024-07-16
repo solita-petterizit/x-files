@@ -149,6 +149,77 @@ func Clean() error {
 	return os.RemoveAll(buildDir)
 }
 
+const (
+	DOCKER_REGISTRY   = "no-registry.local"
+	DOCKER_IMAGE      = "hello-world"
+	DOCKER_TAG        = "latest"
+	DOCKER_FULL       = DOCKER_REGISTRY + "/" + DOCKER_IMAGE + ":" + DOCKER_TAG
+	DOCKER_BUILD_ARGS = ""
+	EXPOSED_AT        = "3000"
+)
+
+// Docker builds and runs the application in Docker
+func Docker() error {
+	mg.SerialDeps(DockerBuild, mg.F(DockerRun, ""))
+	return nil
+}
+
+// DockerDev builds and runs the application in Docker, using GIN_MODE=debug
+func DockerDev() error {
+	mg.SerialDeps(DockerBuild, mg.F(DockerRun, "debug"))
+	return nil
+}
+
+// DockerBuild builds the application container
+func DockerBuild() error {
+	buildArgs := []string{
+		"build",
+		"--tag",
+		DOCKER_FULL,
+	}
+
+	if DOCKER_BUILD_ARGS != "" {
+		buildArgs = append(buildArgs, DOCKER_BUILD_ARGS)
+	}
+
+	buildArgs = append(buildArgs, ".")
+
+	out, err := sh.Output("docker", buildArgs...)
+	if err != nil {
+		return err
+	}
+	if out != "" {
+		fmt.Println(out)
+	}
+
+	return nil
+}
+
+// DockerRun runs the application container (see mage -h dockerRun).
+// The first positional argument determines GIN_MODE=<value> in the runtime environment.
+func DockerRun(ginMode string) error {
+	runArgs := []string{
+		"run",
+		fmt.Sprintf("-p %s:3000", EXPOSED_AT),
+	}
+
+	if ginMode != "" {
+		runArgs = append(runArgs, fmt.Sprintf("GIN_MODE=%s", ginMode))
+	}
+
+	runArgs = append(runArgs, DOCKER_FULL)
+
+	out, err := sh.Output("docker", runArgs...)
+	if err != nil {
+		return err
+	}
+	if out != "" {
+		fmt.Println(out)
+	}
+
+	return nil
+}
+
 /*
 Helpers
 */

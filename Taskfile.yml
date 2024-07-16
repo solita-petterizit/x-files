@@ -3,7 +3,12 @@ version: "3"
 vars:
   BUILD_DIR: "{{.TASKFILE_DIR}}/build"
   APP_DIR: "{{.TASKFILE_DIR}}/app"
-
+  DOCKER_REGISTRY: "no-registry.local"
+  DOCKER_IMAGE: "hello-world"
+  DOCKER_TAG: "latest"
+  DOCKER_FULL: "{{.DOCKER_REGISTRY}}/{{.DOCKER_IMAGE}}:{{.DOCKER_TAG}}"
+  DOCKER_BUILD_ARGS:
+  EXPOSED_AT: "3000"
 tasks:
   # What to run when calling 'task' without a target
   default:
@@ -64,3 +69,32 @@ tasks:
     preconditions:
       - sh: "test -d {{.BUILD_DIR}}"
         msg: "Build directory does not exist. Nothing to delete."
+  docker:
+    desc: "Build and run the application in Docker"
+    deps:
+      - docker-run
+  docker-dev:
+    desc: "Build and run the application in Docker, using GIN_MODE=debug"
+    deps:
+      - task: docker-run
+        vars:
+          GIN_MODE: "debug"
+  docker-build:
+    desc: "Build the application container"
+    cmds:
+      - 'docker build --tag {{.DOCKER_FULL}}{{if not (empty .DOCKER_BUILD_ARGS)}} {{.DOCKER_BUILD_ARGS}}{{end}} .'
+      - touch {{.BUILD_DIR}}/.docker-task-done
+    sources:
+      - "Taskfile.yml"
+      - "Makefile"
+      - "Dockerfile"
+      - "{{.APP_DIR}}/*.go"
+      - "{{.APP_DIR}}/*.html"
+      - "{{.APP_DIR}}/*.css"
+    generates:
+      - "{{.BUILD_DIR}}/.docker-task-done"
+  docker-run:
+    desc: "Run the application container. Supports variable GIN_MODE='...'."
+    deps: ["docker-build"]
+    cmds:
+      - 'docker run -p {{.EXPOSED_AT}}:3000{{if not (empty .GIN_MODE)}} -e "GIN_MODE={{.GIN_MODE}}"{{end}} {{.DOCKER_FULL}}'

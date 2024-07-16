@@ -51,3 +51,24 @@ clean:
 	@echo "Deleting $(BUILD_DIR)"
 	@rm -r $(BUILD_DIR)
 
+# Docker config
+# Prevent pushing publicly by accident
+DOCKER_REGISTRY:=no-registry.local
+DOCKER_IMAGE:=hello-world
+DOCKER_TAG:=latest
+DOCKER_FULL:=$(DOCKER_REGISTRY)/$(DOCKER_IMAGE):$(DOCKER_TAG)
+DOCKER_BUILD_ARGS:=
+EXPOSED_AT:=3000
+
+docker: docker-build docker-run
+docker-dev: docker-build docker-run-dev
+
+docker-build:
+	docker build --tag $(DOCKER_FULL) $(DOCKER_BUILD_ARGS) .
+
+docker-run:
+	docker run -v ./configs:/configs -p $(EXPOSED_AT):3000 $(DOCKER_FULL)
+
+docker-run-dev:
+	docker run -v ./configs:/configs -p $(EXPOSED_AT):3000 -e "GIN_MODE=debug" $(DOCKER_FULL)
+
