@@ -82,3 +82,28 @@ or:
 1. Test: `task test`
 2. Build: `task build`
 3. Remove build artifacts: `task clean`
+
+### Magefile
+
+#### Pre-requisites
+
+1. [Install mage](https://magefile.org/)
+
+E.g as using Go modules:
+
+```sh
+git clone https://github.com/magefile/mage
+cd mage
+go run bootstrap.go
+```
+
+#### Usage
+
+1. Test and build: `mage`
+
+or:
+
+1. Test: `mage test`
+2. Build: `mage build`
+3. Remove build artifacts: `mage clean`
+
