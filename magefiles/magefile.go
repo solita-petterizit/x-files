@@ -13,6 +13,7 @@ import (
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	"github.com/magefile/mage/target"
 )
 
 // Mage settings
@@ -73,6 +74,16 @@ func Test() error {
 // Build builds the application binary and copies assets
 func Build() error {
 	var err error
+
+	// Only build if necessary
+	changed, err := hasAppChanged()
+	if err != nil {
+		return err
+	}
+	if !changed {
+		fmt.Println("Build is up-to-date")
+		return nil
+	}
 
 	fmt.Printf("Ensuring %s exists\n", buildDir)
 
@@ -179,4 +190,42 @@ func runInDir(dir string, cmd string, args ...string) error {
 
 	return nil
 
+}
+
+type srcToArtifactMapping struct {
+	inputGlob string // What glob pattern produces output?
+	output    string // What file or directory is the result?
+}
+
+// hasAppChanged return true if any of the source files are newer than their corresponding
+// build artifacts.
+func hasAppChanged() (bool, error) {
+	var (
+		mappings = []srcToArtifactMapping{
+			{
+				inputGlob: fmt.Sprintf("%s/*.go", appDir),
+				output:    fmt.Sprintf("%s/app", buildDir),
+			},
+			{
+				inputGlob: fmt.Sprintf("%s/*.html", appDir),
+				output:    fmt.Sprintf("%s/index.html", buildDir),
+			},
+			{
+				inputGlob: fmt.Sprintf("%s/*.css", appDir),
+				output:    fmt.Sprintf("%s/styles.css", buildDir),
+			},
+		}
+	)
+
+	for _, m := range mappings {
+		changed, err := target.Glob(m.output, m.inputGlob)
+		if err != nil {
+			return false, err
+		}
+		if changed {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
