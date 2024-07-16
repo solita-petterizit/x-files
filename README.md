@@ -143,3 +143,34 @@ or:
 1. Build: `mage dockerBuild`
 2. Run: `mage dockerRun[Dev]`
 
+### Earthfile
+
+#### Pre-requisites
+
+1. [Install earthly](https://earthly.dev/get-earthly)
+2. Disable analytics by adding the following in `~/.earthly/config.yml` (create it if it does not exist):
+
+```yml
+global:
+    disable_analytics: true
+```
+
+#### Usage
+
+1. Test and build: `earthly +all`
+
+or:
+
+1. Test: `earthly +test`
+2. Build: `earthly +build`
+3. Remove build artifacts: `earthly +clean`
+
+#### Docker workflow
+
+1. Build and run: `earthly +docker[-dev]`
+
+or:
+
+1. Build: `earthly +docker-build` or `earthly +dockerfile`
+2. Run: `earthly +docker-run[-dev]`
+
