@@ -83,7 +83,7 @@ tasks:
     desc: "Build the application container"
     cmds:
       - 'docker build --tag {{.DOCKER_FULL}}{{if not (empty .DOCKER_BUILD_ARGS)}} {{.DOCKER_BUILD_ARGS}}{{end}} .'
-      - touch {{.BUILD_DIR}}/.docker-task-done
+      - touch .task/.docker-task-done
     sources:
       - "Taskfile.yml"
       - "Makefile"
@@ -92,7 +92,7 @@ tasks:
       - "{{.APP_DIR}}/*.html"
       - "{{.APP_DIR}}/*.css"
     generates:
-      - "{{.BUILD_DIR}}/.docker-task-done"
+      - ".task/.docker-task-done"
   docker-run:
     desc: "Run the application container. Supports variable GIN_MODE='...'."
     deps: ["docker-build"]
