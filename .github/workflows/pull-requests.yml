@@ -1,0 +1,80 @@
+name: "Pull request: Run builds"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-on-host:
+    name: "Build application locally"
+    strategy:
+      matrix:
+        include:
+          - entrypoint: "make"
+            image: "golang:1.22"
+          - entrypoint: "~/bin/just"
+            image: "golang:1.22"
+            setup: |
+              mkdir -p ~/bin
+              curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+          - entrypoint: "~/bin/task"
+            image: "golang:1.22"
+            setup: |
+              mkdir -p ~/bin
+              sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/bin
+          - entrypoint: "mage"
+            image: "golang:1.22"
+            setup: |
+              git clone https://github.com/magefile/mage
+              cd mage
+              go run bootstrap.go
+          - entrypoint: "earthly +all"
+            image: "earthly/earthly"
+    runs-on: ubuntu-latest
+    container: "${{matrix.image}}"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: "Setup build environment for ${{matrix.entrypoint}}"
+        if: "${{matrix.setup}}"
+        run: "${{matrix.setup}}"
+      - name: "Run ${{matrix.entrypoint}}"
+        run: "${{matrix.entrypoint}}"
+      - name: Print result
+        run: "ls -la build"
+
+  build-docker:
+    name: "Build application in Docker"
+    strategy:
+      matrix:
+        include:
+          - entrypoint: "make docker-build"
+          - entrypoint: "~/bin/just docker-build"
+            setup: |
+              mkdir -p ~/bin
+              curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+          - entrypoint: "~/bin/task docker-build"
+            setup: |
+              mkdir -p ~/bin
+              sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/bin
+          - entrypoint: "~/bin/mage dockerBuild"
+            setup: |
+              mkdir -p ~/bin
+              wget https://github.com/magefile/mage/releases/download/v1.15.0/mage_1.15.0_Linux-64bit.tar.gz
+              tar xvf mage_1.15.0_Linux-64bit.tar.gz mage
+              mv mage ~/bin
+          - entrypoint: "earthly +docker-build"
+            image: "earthly/earthly"
+    runs-on: ubuntu-latest
+    container: "${{matrix.image}}"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: "Setup build environment for ${{matrix.entrypoint}}"
+        if: "${{matrix.setup}}"
+        run: "${{matrix.setup}}"
+      - name: "Run ${{matrix.entrypoint}}"
+        run: "${{matrix.entrypoint}}"
+      - name: Print result
+        run: "docker images | grep hello-world"
