@@ -67,8 +67,8 @@ docker-build:
 	docker build --tag $(DOCKER_FULL) $(DOCKER_BUILD_ARGS) .
 
 docker-run:
-	docker run -v ./configs:/configs -p $(EXPOSED_AT):3000 $(DOCKER_FULL)
+	docker run -p $(EXPOSED_AT):3000 $(DOCKER_FULL)
 
 docker-run-dev:
-	docker run -v ./configs:/configs -p $(EXPOSED_AT):3000 -e "GIN_MODE=debug" $(DOCKER_FULL)
+	docker run -p $(EXPOSED_AT):3000 -e "GIN_MODE=debug" $(DOCKER_FULL)
 
