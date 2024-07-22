@@ -16,8 +16,8 @@ The commonly referenced modern options:
 
 - [x] Justfile
 - [x] Magefile
-- [ ] Earthfile
-- [ ] Dagger
+- [x] Earthfile
+- [x] Dagger
 
 ## Development (Linux)
 
